@@ -148,7 +148,41 @@ Social media • Design • Content</textarea></div>
   <div class="section">
     <h3>Post</h3>
     <div class="field"><label>Zdjęcie posta</label><input class="file" id="postInput" type="file" accept="image/*"></div>
-    <div class="field"><label>Zdjęcia do siatki (maks. 9)</label><input class="file" id="gridInput" type="file" accept="image/*" multiple></div>
+    <div class="field">
+  <label>Zdjęcia postów — Grid (maks. 9)</label>
+  <input class="file" id="gridInput" type="file" accept="image/*" multiple>
+</div>
+
+<div class="field">
+  <label>Zdjęcia Highlights (maks. 5)</label>
+  <input class="file" id="highlightInput" type="file" accept="image/*" multiple>
+</div>
+    <div class="grid2">
+  <div class="field">
+    <label>Highlight 1</label>
+    <input id="highlightName1" value="New">
+  </div>
+
+  <div class="field">
+    <label>Highlight 2</label>
+    <input id="highlightName2" value="Work">
+  </div>
+
+  <div class="field">
+    <label>Highlight 3</label>
+    <input id="highlightName3" value="Life">
+  </div>
+
+  <div class="field">
+    <label>Highlight 4</label>
+    <input id="highlightName4" value="Ideas">
+  </div>
+</div>
+
+<div class="field">
+  <label>Highlight 5</label>
+  <input id="highlightName5" value="More">
+</div>
     <div class="field"><label>Opis</label><textarea id="caption">New project is coming soon ✨
 What do you think? #design #creative #instagram</textarea></div>
     <div class="grid2">
@@ -200,7 +234,24 @@ const state = {
 };
 
 const $ = id => document.getElementById(id);
-const fields = ["username","displayName","bio","posts","followers","following","caption","likes","comments","commentPreview","storyText"];
+const fields = [
+  "username",
+  "displayName",
+  "bio",
+  "posts",
+  "followers",
+  "following",
+  "caption",
+  "likes",
+  "comments",
+  "commentPreview",
+  "storyText",
+  "highlightName1",
+  "highlightName2",
+  "highlightName3",
+  "highlightName4",
+  "highlightName5"
+];
 
 function imgPlaceholder(seed){
   const colors=["#e9e9e9","#d7d7d7","#c6c6c6","#eeeeee","#bdbdbd","#dedede","#cfcfcf","#e5e5e5","#aaa"];
@@ -208,8 +259,24 @@ function imgPlaceholder(seed){
     `<svg xmlns="http://www.w3.org/2000/svg" width="600" height="600"><rect width="100%" height="100%" fill="${colors[seed%colors.length]}"/><text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" font-family="Arial" font-size="34" fill="#777">IMAGE</text></svg>`
   );
 }
-let avatar=imgPlaceholder(1), post=imgPlaceholder(2), story=imgPlaceholder(3);
-let grid=Array.from({length:9},(_,i)=>imgPlaceholder(i));
+let avatar=imgPlaceholder(1);
+let post=imgPlaceholder(2);
+let story=imgPlaceholder(3);
+
+let grid=Array.from(
+  {length:9},
+  (_,i)=>imgPlaceholder(i)
+);
+
+highlights=Array.from(
+  {length:5},
+  (_,i)=>imgPlaceholder(i+10)
+);
+
+let highlights=Array.from(
+  {length:5},
+  (_,i)=>imgPlaceholder(i+10)
+);
 
 function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));}
 
@@ -247,7 +314,14 @@ function profileHTML(d,u){
   <div class="name">${esc(d.displayName)}</div>
   <div class="bio">${esc(d.bio)}</div>
   <div class="profile-buttons"><button>Follow</button><button>Message</button><button>⌄</button></div>
-  <div class="highlights">${[0,1,2,3,4].map((x)=>`<div class="highlight"><img src="${grid[x]}"><div>${["New","Work","Life","Ideas","More"][x]}</div></div>`).join("")}</div>
+ <div class="highlights">
+  ${highlights.map((x,i)=>`
+    <div class="highlight">
+      <img src="${x}">
+      <div>${esc(d["highlightName"+(i+1)])}</div>
+    </div>
+  `).join("")}
+</div>
  </div><div class="grid">${grid.map(x=>`<img src="${x}">`).join("")}</div>`;
 }
 function postHTML(d,u){
@@ -275,6 +349,21 @@ $("avatarInput").addEventListener("change",e=>readImage(e.target.files[0],x=>{av
 $("postInput").addEventListener("change",e=>readImage(e.target.files[0],x=>{post=x;render()}));
 $("storyInput").addEventListener("change",e=>readImage(e.target.files[0],x=>{story=x;render()}));
 $("gridInput").addEventListener("change",e=>{
+  $("highlightInput").addEventListener("change",e=>{
+  const files=[...e.target.files].slice(0,5);
+
+  Promise.all(
+    files.map(f=>new Promise(res=>readImage(f,res)))
+  ).then(xs=>{
+    if(xs.length){
+      highlights=xs;
+      while(highlights.length<5){
+        highlights.push(imgPlaceholder(highlights.length+10));
+      }
+      render();
+    }
+  });
+});
  const files=[...e.target.files].slice(0,9);
  Promise.all(files.map(f=>new Promise(res=>readImage(f,res)))).then(xs=>{
    grid=xs.length?xs:grid; while(grid.length<9)grid.push(imgPlaceholder(grid.length)); render();
@@ -305,6 +394,11 @@ $("resetBtn").addEventListener("click",()=>{
  $("caption").value="New project is coming soon ✨\nWhat do you think? #design #creative #instagram";
  $("likes").value="1,248";$("comments").value="86";$("commentPreview").value="This looks amazing! 🔥";
  $("storyText").value="NEW DROP ✨"; avatar=imgPlaceholder(1);post=imgPlaceholder(2);story=imgPlaceholder(3);grid=Array.from({length:9},(_,i)=>imgPlaceholder(i));
+  $("highlightName1").value="New";
+$("highlightName2").value="Work";
+$("highlightName3").value="Life";
+$("highlightName4").value="Ideas";
+$("highlightName5").value="More";
  state.dark=false;state.view="profile";document.querySelectorAll(".tab").forEach((x,i)=>x.classList.toggle("active",i===0));
  $("themeBtn").textContent="☾ Tryb ciemny";render();
 });
