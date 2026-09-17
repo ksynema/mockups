@@ -267,12 +267,7 @@ let grid=Array.from(
   {length:9},
   (_,i)=>imgPlaceholder(i)
 );
-
-highlights=Array.from(
-  {length:5},
-  (_,i)=>imgPlaceholder(i+10)
-);
-
+highlights=Array.from({length:5},(_,i)=>imgPlaceholder(i+10));
 let highlights=Array.from(
   {length:5},
   (_,i)=>imgPlaceholder(i+10)
@@ -349,25 +344,40 @@ $("avatarInput").addEventListener("change",e=>readImage(e.target.files[0],x=>{av
 $("postInput").addEventListener("change",e=>readImage(e.target.files[0],x=>{post=x;render()}));
 $("storyInput").addEventListener("change",e=>readImage(e.target.files[0],x=>{story=x;render()}));
 $("gridInput").addEventListener("change",e=>{
-  $("highlightInput").addEventListener("change",e=>{
-  const files=[...e.target.files].slice(0,5);
+$("gridInput").addEventListener("change", e => {
+  const files = [...e.target.files].slice(0, 9);
 
   Promise.all(
-    files.map(f=>new Promise(res=>readImage(f,res)))
-  ).then(xs=>{
-    if(xs.length){
-      highlights=xs;
-      while(highlights.length<5){
-        highlights.push(imgPlaceholder(highlights.length+10));
+    files.map(f => new Promise(res => readImage(f, res)))
+  ).then(xs => {
+    if (xs.length) {
+      grid = xs;
+
+      while (grid.length < 9) {
+        grid.push(imgPlaceholder(grid.length));
       }
+
       render();
     }
   });
 });
- const files=[...e.target.files].slice(0,9);
- Promise.all(files.map(f=>new Promise(res=>readImage(f,res)))).then(xs=>{
-   grid=xs.length?xs:grid; while(grid.length<9)grid.push(imgPlaceholder(grid.length)); render();
- });
+
+$("highlightInput").addEventListener("change", e => {
+  const files = [...e.target.files].slice(0, 5);
+
+  Promise.all(
+    files.map(f => new Promise(res => readImage(f, res)))
+  ).then(xs => {
+    if (xs.length) {
+      highlights = xs;
+
+      while (highlights.length < 5) {
+        highlights.push(imgPlaceholder(highlights.length + 10));
+      }
+
+      render();
+    }
+  });
 });
 
 fields.forEach(id=>$(id).addEventListener("input",render));
