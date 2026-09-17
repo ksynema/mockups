@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>InstaMock — Instagram Mockup Builder</title>
+<meta name="description" content="Darmowy, działający w przeglądarce generator mockupów Instagrama.">
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<style>
+:root{
+  --bg:#f5f5f7;--panel:#fff;--panel2:#fafafa;--text:#171717;--muted:#737373;
+  --border:#e5e5e5;--accent:#111;--accentText:#fff;--preview:#e9e9ed;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--text)}
+button,input,textarea,select{font:inherit}
+button{cursor:pointer}
+.app{min-height:100vh;display:flex;flex-direction:column}
+.topbar{height:64px;background:var(--panel);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 22px;position:sticky;top:0;z-index:20}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800}
+.logo{width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,#ffdc80,#fcaf45,#f77737,#e1306c,#833ab4);display:grid;place-items:center;color:#fff;font-size:17px}
+.top-actions{display:flex;gap:8px;align-items:center}
+.btn{border:1px solid var(--border);background:var(--panel);color:var(--text);padding:9px 13px;border-radius:9px;font-weight:650}
+.btn:hover{background:var(--panel2)}
+.btn.primary{background:var(--accent);color:var(--accentText);border-color:var(--accent)}
+.btn.danger{color:#c00}
+.main{display:grid;grid-template-columns:360px 1fr;min-height:calc(100vh - 64px)}
+.sidebar{background:var(--panel);border-right:1px solid var(--border);padding:18px;overflow:auto}
+.section{padding:0 0 18px;margin-bottom:18px;border-bottom:1px solid var(--border)}
+.section:last-child{border-bottom:0}
+.section h3{font-size:13px;margin:0 0 12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.tab{border:1px solid var(--border);background:var(--panel2);padding:9px 4px;border-radius:8px;font-size:12px;font-weight:700}
+.tab.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.field{margin:0 0 11px}
+.field label{display:block;font-size:12px;font-weight:700;margin-bottom:5px;color:var(--muted)}
+.field input,.field textarea,.field select{width:100%;border:1px solid var(--border);background:var(--panel);color:var(--text);border-radius:8px;padding:9px 10px;outline:none}
+.field input:focus,.field textarea:focus{border-color:#999}
+.field textarea{min-height:74px;resize:vertical}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.file{border:1px dashed #bbb;border-radius:8px;padding:9px;background:var(--panel2);width:100%;font-size:12px}
+.color-row{display:flex;gap:8px;align-items:center}
+.color-row input[type=color]{width:44px;height:36px;padding:2px}
+.preview-area{background:var(--preview);display:flex;align-items:center;justify-content:center;padding:40px;overflow:auto;min-width:0}
+.preview-wrap{display:flex;flex-direction:column;align-items:center;gap:18px}
+.phone{width:430px;max-width:90vw;background:#000;border-radius:42px;padding:10px;box-shadow:0 25px 70px rgba(0,0,0,.22)}
+.phone-screen{background:#fff;border-radius:33px;overflow:hidden;position:relative}
+.dark .phone-screen{background:#000}
+.ig{width:100%;min-height:760px;background:#fff;color:#111}
+.dark .ig{background:#000;color:#f5f5f5}
+.ig-header{height:62px;border-bottom:1px solid #ddd;display:flex;align-items:center;justify-content:space-between;padding:0 16px}
+.dark .ig-header{border-color:#262626}
+.ig-brand{font-size:24px;font-weight:800;letter-spacing:-1.3px;font-family:cursive}
+.header-icons{display:flex;gap:17px;font-size:23px}
+.profile{padding:22px 18px 0}
+.profile-top{display:flex;align-items:center;gap:20px}
+.avatar{width:84px;height:84px;border-radius:50%;object-fit:cover;background:#eee;border:3px solid transparent}
+.avatar.ring{border:3px solid #e1306c;padding:2px}
+.profile-stats{display:flex;flex:1;justify-content:space-between;text-align:center}
+.stat b{display:block;font-size:17px}.stat span{font-size:12px;color:#777}.dark .stat span{color:#aaa}
+.name{font-size:15px;font-weight:750;margin-top:14px}
+.bio{font-size:13px;line-height:1.45;margin-top:5px;white-space:pre-line}
+.profile-buttons{display:grid;grid-template-columns:1fr 1fr 42px;gap:7px;margin:14px 0}
+.profile-buttons button{border:1px solid #ccc;background:#fafafa;border-radius:8px;height:34px;font-weight:700;font-size:12px}
+.dark .profile-buttons button{background:#111;color:#fff;border-color:#333}
+.highlights{display:flex;gap:13px;overflow:hidden;padding:2px 0 17px}
+.highlight{min-width:62px;text-align:center;font-size:10px}
+.highlight img{width:58px;height:58px;border-radius:50%;object-fit:cover;border:1px solid #ccc;padding:2px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px}
+.grid img{width:100%;aspect-ratio:1/1;object-fit:cover;background:#eee;display:block}
+.post-head{height:60px;display:flex;align-items:center;gap:10px;padding:0 13px;border-bottom:1px solid #ddd}
+.dark .post-head{border-color:#262626}
+.post-head .small-avatar{width:34px;height:34px;border-radius:50%;object-fit:cover}
+.post-user{font-weight:750;font-size:13px;flex:1}
+.more{font-size:22px}
+.post-image{width:100%;aspect-ratio:1/1;object-fit:cover;background:#eee;display:block}
+.post-actions{display:flex;align-items:center;gap:17px;padding:11px 13px 4px;font-size:24px}
+.post-actions .save{margin-left:auto}
+.post-meta{padding:0 13px 18px;font-size:13px;line-height:1.45}
+.post-meta b{font-weight:750}
+.caption{margin-top:4px;white-space:pre-line}
+.comments{color:#777;margin-top:5px}
+.story{min-height:760px;background:#111;position:relative;color:#fff;display:flex;align-items:center;justify-content:center}
+.story img{width:100%;height:760px;object-fit:cover;opacity:.92}
+.story-ui{position:absolute;inset:0;padding:16px;display:flex;flex-direction:column;pointer-events:none}
+.story-top{display:flex;align-items:center;gap:9px}
+.story-top img{width:34px;height:34px;border-radius:50%;object-fit:cover}
+.story-top b{font-size:13px}
+.story-bar{height:3px;background:rgba(255,255,255,.5);margin-bottom:10px;border-radius:5px;overflow:hidden}
+.story-bar i{display:block;width:45%;height:100%;background:#fff}
+.story-caption{margin-top:auto;text-align:center;font-size:20px;font-weight:700;text-shadow:0 2px 8px #000;padding:30px}
+.grid-view{padding-top:4px}
+.view-label{text-align:center;font-size:12px;color:var(--muted);margin-bottom:8px}
+.export-note{font-size:11px;color:var(--muted);text-align:center}
+.hidden{display:none!important}
+@media(max-width:900px){
+ .main{grid-template-columns:1fr}
+ .sidebar{border-right:0;border-bottom:1px solid var(--border);max-height:none}
+ .preview-area{min-height:820px;padding:20px}
+}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+<header class="topbar">
+  <div class="brand"><div class="logo">◎</div><span>InstaMock</span></div>
+  <div class="top-actions">
+    <button class="btn" id="themeBtn">☾ Tryb ciemny</button>
+    <button class="btn" id="resetBtn">Reset</button>
+    <button class="btn primary" id="exportBtn">↓ Eksport PNG</button>
+  </div>
+</header>
+
+<main class="main">
+<aside class="sidebar">
+  <div class="section">
+    <h3>Typ mockupu</h3>
+    <div class="tabs">
+      <button class="tab active" data-view="profile">Profil</button>
+      <button class="tab" data-view="post">Post</button>
+      <button class="tab" data-view="story">Story</button>
+      <button class="tab" data-view="grid">Grid</button>
+    </div>
+  </div>
+
+  <div class="section">
+    <h3>Konto</h3>
+    <div class="field"><label>Zdjęcie profilowe</label><input class="file" id="avatarInput" type="file" accept="image/*"></div>
+    <div class="field"><label>Nazwa użytkownika</label><input id="username" value="instamock"></div>
+    <div class="field"><label>Nazwa profilu</label><input id="displayName" value="InstaMock Studio"></div>
+    <div class="field"><label>Bio</label><textarea id="bio">Creative studio ✦
+Social media • Design • Content</textarea></div>
+    <div class="grid2">
+      <div class="field"><label>Posty</label><input id="posts" value="128"></div>
+      <div class="field"><label>Obserwujący</label><input id="followers" value="12.4K"></div>
+    </div>
+    <div class="field"><label>Obserwowani</label><input id="following" value="428"></div>
+  </div>
+
+  <div class="section">
+    <h3>Post</h3>
+    <div class="field"><label>Zdjęcie posta</label><input class="file" id="postInput" type="file" accept="image/*"></div>
+    <div class="field"><label>Zdjęcia do siatki (maks. 9)</label><input class="file" id="gridInput" type="file" accept="image/*" multiple></div>
+    <div class="field"><label>Opis</label><textarea id="caption">New project is coming soon ✨
+What do you think? #design #creative #instagram</textarea></div>
+    <div class="grid2">
+      <div class="field"><label>Polubienia</label><input id="likes" value="1,248"></div>
+      <div class="field"><label>Komentarze</label><input id="comments" value="86"></div>
+    </div>
+    <div class="field"><label>Podgląd komentarza</label><input id="commentPreview" value="This looks amazing! 🔥"></div>
+  </div>
+
+  <div class="section">
+    <h3>Story</h3>
+    <div class="field"><label>Zdjęcie story</label><input class="file" id="storyInput" type="file" accept="image/*"></div>
+    <div class="field"><label>Tekst story</label><input id="storyText" value="NEW DROP ✨"></div>
+  </div>
+
+  <div class="section">
+    <h3>Wygląd</h3>
+    <div class="field"><label>Kolor tła podglądu</label><div class="color-row"><input type="color" id="previewColor" value="#e9e9ed"><input id="previewColorText" value="#e9e9ed"></div></div>
+    <div class="field"><label>Zaokrąglenie telefonu</label><input id="phoneRadius" type="range" min="20" max="55" value="42"></div>
+  </div>
+
+  <div class="section">
+    <h3>Eksport</h3>
+    <div class="export-note">Eksport wykonuje się lokalnie w przeglądarce. Obrazy nie są wysyłane na serwer.</div>
+  </div>
+</aside>
+
+<section class="preview-area" id="previewArea">
+  <div class="preview-wrap">
+    <div class="phone" id="phone">
+      <div class="phone-screen" id="capture">
+        <div id="mockup"></div>
+      </div>
+    </div>
+    <div class="view-label">Live preview • InstaMock</div>
+  </div>
+</section>
+</main>
+</div>
+
+<script>
+const state = {
+  view:"profile",
+  avatar:"",
+  post:"",
+  story:"",
+  grid:[],
+  dark:false
+};
+
+const $ = id => document.getElementById(id);
+const fields = ["username","displayName","bio","posts","followers","following","caption","likes","comments","commentPreview","storyText"];
+
+function imgPlaceholder(seed){
+  const colors=["#e9e9e9","#d7d7d7","#c6c6c6","#eeeeee","#bdbdbd","#dedede","#cfcfcf","#e5e5e5","#aaa"];
+  return "data:image/svg+xml;charset=UTF-8,"+encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" width="600" height="600"><rect width="100%" height="100%" fill="${colors[seed%colors.length]}"/><text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" font-family="Arial" font-size="34" fill="#777">IMAGE</text></svg>`
+  );
+}
+let avatar=imgPlaceholder(1), post=imgPlaceholder(2), story=imgPlaceholder(3);
+let grid=Array.from({length:9},(_,i)=>imgPlaceholder(i));
+
+function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));}
+
+function data(){
+  return Object.fromEntries(fields.map(id=>[id,$(id).value]));
+}
+
+function render(){
+  const d=data(), u=esc(d.username).replace(/^@/,"");
+  const darkClass=state.dark?"dark":"";
+  $("app").classList.toggle("dark",state.dark);
+  $("previewArea").style.background=$("previewColor").value;
+  $("phone").style.borderRadius=$("phoneRadius").value+"px";
+  let html="";
+  if(state.view==="profile") html=profileHTML(d,u);
+  if(state.view==="post") html=postHTML(d,u);
+  if(state.view==="story") html=storyHTML(d,u);
+  if(state.view==="grid") html=gridHTML(d,u);
+  $("mockup").innerHTML=`<div class="ig ${darkClass}">${headerHTML()}${html}</div>`;
+}
+function headerHTML(){
+ return `<div class="ig-header"><div class="ig-brand">Instagram</div><div class="header-icons"><span>♡</span><span>✉</span></div></div>`;
+}
+function avatarHTML(cls="avatar"){return `<img class="${cls}" src="${avatar}" alt="">`}
+
+function profileHTML(d,u){
+ return `<div class="profile">
+  <div class="profile-top">${avatarHTML("avatar ring")}
+   <div class="profile-stats">
+    <div class="stat"><b>${esc(d.posts)}</b><span>posts</span></div>
+    <div class="stat"><b>${esc(d.followers)}</b><span>followers</span></div>
+    <div class="stat"><b>${esc(d.following)}</b><span>following</span></div>
+   </div>
+  </div>
+  <div class="name">${esc(d.displayName)}</div>
+  <div class="bio">${esc(d.bio)}</div>
+  <div class="profile-buttons"><button>Follow</button><button>Message</button><button>⌄</button></div>
+  <div class="highlights">${[0,1,2,3,4].map((x)=>`<div class="highlight"><img src="${grid[x]}"><div>${["New","Work","Life","Ideas","More"][x]}</div></div>`).join("")}</div>
+ </div><div class="grid">${grid.map(x=>`<img src="${x}">`).join("")}</div>`;
+}
+function postHTML(d,u){
+ return `<div class="post">
+  <div class="post-head">${avatarHTML("small-avatar")}<div class="post-user">${u}</div><div class="more">•••</div></div>
+  <img class="post-image" src="${post}">
+  <div class="post-actions"><span>♡</span><span>◯</span><span>⌁</span><span class="save">♧</span></div>
+  <div class="post-meta"><b>${esc(d.likes)} likes</b><div class="caption"><b>${u}</b> ${esc(d.caption)}</div><div class="comments">View all ${esc(d.comments)} comments</div><div class="comments">${esc(d.commentPreview)}</div></div>
+ </div>`;
+}
+function storyHTML(d,u){
+ return `<div class="story"><img src="${story}"><div class="story-ui"><div class="story-bar"><i></i></div><div class="story-top">${avatarHTML()}<b>${u}</b><span style="margin-left:auto">•••</span></div><div class="story-caption">${esc(d.storyText)}</div></div></div>`;
+}
+function gridHTML(d,u){
+ return `<div class="profile" style="padding-bottom:12px"><div class="profile-top">${avatarHTML("avatar")}<div class="profile-stats"><div class="stat"><b>${esc(d.posts)}</b><span>posts</span></div><div class="stat"><b>${esc(d.followers)}</b><span>followers</span></div><div class="stat"><b>${esc(d.following)}</b><span>following</span></div></div></div><div class="name">${esc(d.displayName)}</div><div class="bio">${esc(d.bio)}</div></div><div class="grid grid-view">${grid.map(x=>`<img src="${x}">`).join("")}</div>`;
+}
+
+function readImage(file,cb){
+ if(!file)return;
+ const r=new FileReader();
+ r.onload=e=>cb(e.target.result);
+ r.readAsDataURL(file);
+}
+$("avatarInput").addEventListener("change",e=>readImage(e.target.files[0],x=>{avatar=x;render()}));
+$("postInput").addEventListener("change",e=>readImage(e.target.files[0],x=>{post=x;render()}));
+$("storyInput").addEventListener("change",e=>readImage(e.target.files[0],x=>{story=x;render()}));
+$("gridInput").addEventListener("change",e=>{
+ const files=[...e.target.files].slice(0,9);
+ Promise.all(files.map(f=>new Promise(res=>readImage(f,res)))).then(xs=>{
+   grid=xs.length?xs:grid; while(grid.length<9)grid.push(imgPlaceholder(grid.length)); render();
+ });
+});
+
+fields.forEach(id=>$(id).addEventListener("input",render));
+document.querySelectorAll(".tab").forEach(btn=>btn.addEventListener("click",()=>{
+ document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
+ btn.classList.add("active"); state.view=btn.dataset.view; render();
+}));
+$("themeBtn").addEventListener("click",()=>{
+ state.dark=!state.dark;
+ $("themeBtn").textContent=state.dark?"☀ Tryb jasny":"☾ Tryb ciemny";
+ render();
+});
+$("previewColor").addEventListener("input",e=>{$("previewColorText").value=e.target.value;render()});
+$("previewColorText").addEventListener("input",e=>{
+ if(/^#[0-9a-fA-F]{6}$/.test(e.target.value)){$("previewColor").value=e.target.value;render()}
+});
+$("phoneRadius").addEventListener("input",render);
+
+$("resetBtn").addEventListener("click",()=>{
+ if(!confirm("Przywrócić ustawienia domyślne?"))return;
+ $("username").value="instamock";$("displayName").value="InstaMock Studio";
+ $("bio").value="Creative studio ✦\nSocial media • Design • Content";
+ $("posts").value="128";$("followers").value="12.4K";$("following").value="428";
+ $("caption").value="New project is coming soon ✨\nWhat do you think? #design #creative #instagram";
+ $("likes").value="1,248";$("comments").value="86";$("commentPreview").value="This looks amazing! 🔥";
+ $("storyText").value="NEW DROP ✨"; avatar=imgPlaceholder(1);post=imgPlaceholder(2);story=imgPlaceholder(3);grid=Array.from({length:9},(_,i)=>imgPlaceholder(i));
+ state.dark=false;state.view="profile";document.querySelectorAll(".tab").forEach((x,i)=>x.classList.toggle("active",i===0));
+ $("themeBtn").textContent="☾ Tryb ciemny";render();
+});
+
+$("exportBtn").addEventListener("click",async()=>{
+ const btn=$("exportBtn"); const old=btn.textContent; btn.textContent="Eksportuję…";
+ try{
+  const canvas=await html2canvas($("capture"),{scale:2,useCORS:true,backgroundColor:null});
+  const a=document.createElement("a");
+  a.download=`instagram-mockup-${state.view}.png`;
+  a.href=canvas.toDataURL("image/png");
+  a.click();
+ }catch(err){alert("Nie udało się wyeksportować obrazu. Spróbuj ponownie.");console.error(err)}
+ btn.textContent=old;
+});
+render();
+</script>
+</body>
+</html>
