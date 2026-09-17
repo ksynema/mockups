@@ -105,6 +105,27 @@ button{cursor:pointer}
  .main{grid-template-columns:1fr}
  .sidebar{border-right:0;border-bottom:1px solid var(--border);max-height:none}
  .preview-area{min-height:820px;padding:20px}
+  .individual-upload{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+
+.individual-upload > div{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+
+.individual-upload span{
+  font-size:11px;
+  font-weight:700;
+  color:var(--muted);
+}
+
+.individual-upload .file{
+  margin:0;
+}
 }
 </style>
 </head>
@@ -148,14 +169,89 @@ Social media • Design • Content</textarea></div>
   <div class="section">
     <h3>Post</h3>
     <div class="field"><label>Zdjęcie posta</label><input class="file" id="postInput" type="file" accept="image/*"></div>
-    <div class="field">
-  <label>Zdjęcia postów — Grid (maks. 9)</label>
-  <input class="file" id="gridInput" type="file" accept="image/*" multiple>
+   <div class="field">
+  <label>Zdjęcia postów — Grid</label>
+
+  <div class="individual-upload">
+    <div>
+      <span>Grid 1</span>
+      <input class="file" id="gridInput1" type="file" accept="image/*">
+    </div>
+
+    <div>
+      <span>Grid 2</span>
+      <input class="file" id="gridInput2" type="file" accept="image/*">
+    </div>
+
+    <div>
+      <span>Grid 3</span>
+      <input class="file" id="gridInput3" type="file" accept="image/*">
+    </div>
+
+    <div>
+      <span>Grid 4</span>
+      <input class="file" id="gridInput4" type="file" accept="image/*">
+    </div>
+
+    <div>
+      <span>Grid 5</span>
+      <input class="file" id="gridInput5" type="file" accept="image/*">
+    </div>
+
+    <div>
+      <span>Grid 6</span>
+      <input class="file" id="gridInput6" type="file" accept="image/*">
+    </div>
+
+    <div>
+      <span>Grid 7</span>
+      <input class="file" id="gridInput7" type="file" accept="image/*">
+    </div>
+
+    <div>
+      <span>Grid 8</span>
+      <input class="file" id="gridInput8" type="file" accept="image/*">
+    </div>
+
+    <div>
+      <span>Grid 9</span>
+      <input class="file" id="gridInput9" type="file" accept="image/*">
+    </div>
+  </div>
 </div>
 
+
 <div class="field">
-  <label>Zdjęcia Highlights (maks. 5)</label>
-  <input class="file" id="highlightInput" type="file" accept="image/*" multiple>
+  <label>Zdjęcia Highlights</label>
+
+  <div class="individual-upload">
+
+    <div>
+      <span>Highlight 1</span>
+      <input class="file" id="highlightInput1" type="file" accept="image/*">
+    </div>
+
+    <div>
+      <span>Highlight 2</span>
+      <input class="file" id="highlightInput2" type="file" accept="image/*">
+    </div>
+
+    <div>
+      <span>Highlight 3</span>
+      <input class="file" id="highlightInput3" type="file" accept="image/*">
+    </div>
+
+    <div>
+      <span>Highlight 4</span>
+      <input class="file" id="highlightInput4" type="file" accept="image/*">
+    </div>
+
+    <div>
+      <span>Highlight 5</span>
+      <input class="file" id="highlightInput5" type="file" accept="image/*">
+    </div>
+
+  </div>
 </div>
     <div class="grid2">
   <div class="field">
@@ -300,7 +396,13 @@ let highlights = Array.from(
   { length: 5 },
   (_, i) => imgPlaceholder(i + 10)
 );
+for (let i = 1; i <= 9; i++) {
+  $(`gridInput${i}`).value = "";
+}
 
+for (let i = 1; i <= 5; i++) {
+  $(`highlightInput${i}`).value = "";
+}
 
 /* =========================
    BEZPIECZNY TEKST
@@ -766,85 +868,60 @@ $("storyInput").addEventListener(
    GRID — DO 9 ZDJĘĆ
 ========================= */
 
-$("gridInput").addEventListener(
-  "change",
-  e => {
+/* =========================
+   GRID — KAŻDE ZDJĘCIE OSOBNO
+========================= */
 
-    const files =
-      [...e.target.files].slice(0, 9);
+for (let i = 0; i < 9; i++) {
 
-    Promise.all(
+  $(`gridInput${i + 1}`).addEventListener(
+    "change",
+    e => {
 
-      files.map(
-        file =>
-          new Promise(resolve => {
-            readImage(file, resolve);
-          })
-      )
+      const file = e.target.files[0];
 
-    ).then(images => {
+      if (!file) return;
 
-      if (images.length === 0) return;
+      readImage(file, image => {
 
-      grid = images;
+        grid[i] = image;
 
-      while (grid.length < 9) {
+        render();
 
-        grid.push(
-          imgPlaceholder(grid.length)
-        );
+      });
 
-      }
+    }
+  );
 
-      render();
-
-    });
-
-  }
-);
+}
 
 
 /* =========================
-   HIGHLIGHTS — DO 5 ZDJĘĆ
+   HIGHLIGHTS — KAŻDE OSOBNO
 ========================= */
 
-$("highlightInput").addEventListener(
-  "change",
-  e => {
+for (let i = 0; i < 5; i++) {
 
-    const files =
-      [...e.target.files].slice(0, 5);
+  $(`highlightInput${i + 1}`).addEventListener(
+    "change",
+    e => {
 
-    Promise.all(
+      const file = e.target.files[0];
 
-      files.map(
-        file =>
-          new Promise(resolve => {
-            readImage(file, resolve);
-          })
-      )
+      if (!file) return;
 
-    ).then(images => {
+      readImage(file, image => {
 
-      if (images.length === 0) return;
+        highlights[i] = image;
 
-      highlights = images;
+        render();
 
-      while (highlights.length < 5) {
+      });
 
-        highlights.push(
-          imgPlaceholder(highlights.length + 10)
-        );
+    }
+  );
 
-      }
-
-      render();
-
-    });
-
-  }
-);
-
+}
 
 /* =========================
    POLA TEKSTOWE
